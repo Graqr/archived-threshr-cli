@@ -1,12 +1,24 @@
 package com.graqr.threshr
 
+import groovy.sql.Sql
 import io.micronaut.configuration.picocli.PicocliRunner
 import io.micronaut.context.ApplicationContext
+import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Value
 import io.micronaut.context.env.Environment
 import spock.lang.AutoCleanup
 import spock.lang.Shared
+import spock.lang.Unroll
 
+@Requires(property = "test.datasources.default.url")
 class ThreshrCliSpec extends ThreshrSpec {
+
+    @Shared
+    @Value('${test.datasources.default.url}')
+    String url
+
+    @Shared
+    Sql sql
 
     @Shared
     final PrintStream originalOut = System.out
@@ -22,8 +34,13 @@ class ThreshrCliSpec extends ThreshrSpec {
     @AutoCleanup
     ApplicationContext ctx = ApplicationContext.run(Environment.CLI, Environment.TEST)
 
+
     void execute(String... args) {
         PicocliRunner.run(ThreshrCli, ctx, args)
+    }
+
+    void setupSpec() {
+        sql = Sql.newInstance(url)
     }
 
     def setup() {
@@ -49,6 +66,19 @@ class ThreshrCliSpec extends ThreshrSpec {
                 "  -t, --tcin, product-id-number=<tcinValues>\n" +
                 "\n" +
                 "  -V, --version   Print version information and exit.\n"
+    }
+    @Unroll
+    def "tcin arg can include #count values w/o errors"() {
+        when:
 
+        String[] tcinArg = sql.rows("select tcin FROM target_stores TABLESAMPLE BERNOULLI (5) limit ${count}")
+        execute('--tcin', tcinArg.join(','))
+
+        then:
+        noExceptionThrown()
+
+        where:
+        count << [1..20]
     }
 }
+

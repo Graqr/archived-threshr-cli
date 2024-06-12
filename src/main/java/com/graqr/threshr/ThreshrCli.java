@@ -1,5 +1,6 @@
 package com.graqr.threshr;
 
+import com.graqr.threshr.model.queryparam.TargetStore;
 import com.graqr.threshr.model.queryparam.Tcin;
 import io.micronaut.configuration.picocli.PicocliRunner;
 import jakarta.inject.Singleton;
@@ -14,9 +15,12 @@ public class ThreshrCli implements Runnable {
     ThreshrController controller;
     @Option(
             names = {"--tcin", "-t", "product-id-number"},
-            required = false,
+            required = true,
             description = "", converter = TcinsConverter.class)
     Tcin[] tcinValues;
+
+    @Option(names = {"--store-id", "-s"}, required = true, description = "store id as given in redsky api")
+    String storeId;
 
     public ThreshrCli(ThreshrController threshr) {
         this.controller = threshr;
@@ -28,7 +32,7 @@ public class ThreshrCli implements Runnable {
     }
 
     public void run() {
-        // TODO: do all the things :P
+        assert null != tcinValues;
     }
 
     static class TcinsConverter implements CommandLine.ITypeConverter<Tcin[]> {

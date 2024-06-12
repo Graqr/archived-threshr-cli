@@ -12,7 +12,7 @@ import java.util.stream.Collectors
  * This test class is necessary despite similarity to the controller test. please don't delete this as the
  * httpclient logs are visible in this test but not in the controller test.
  */
-class ThreshrClientSpec extends ThreshrSpec {
+class ThreshrControllerClientSpec extends ThreshrSpec {
 
 
     void "no error requesting product summaries"() {

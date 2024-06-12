@@ -17,12 +17,12 @@ import jakarta.inject.Inject;
 import java.util.List;
 
 @Controller("/constructor")
-public class Threshr {
+public class ThreshrController {
 
     private final ThreshrClient threshrClient;
 
     @Inject
-    public Threshr(@SuppressWarnings("ClassEscapesDefinedScope") ThreshrClient threshrClient){
+    public ThreshrController(@SuppressWarnings("ClassEscapesDefinedScope") ThreshrClient threshrClient){
         this.threshrClient = threshrClient;
     }
 

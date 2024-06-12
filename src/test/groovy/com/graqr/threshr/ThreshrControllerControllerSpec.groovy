@@ -10,7 +10,7 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Shared
 
 @MicronautTest
-class ThreshrControllerSpec extends ThreshrSpec {
+class ThreshrControllerControllerSpec extends ThreshrSpec {
 
     @Shared
     @Value('${test.datasources.default.url}')

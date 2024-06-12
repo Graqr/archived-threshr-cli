@@ -18,7 +18,7 @@ class ThreshrSpec extends Specification {
     //  ----------- Resources / Fields -----------
     @Inject
     @Shared
-    Threshr threshrController
+    ThreshrController threshrController
 
     @Inject
     @Shared

@@ -1,7 +1,10 @@
 package com.graqr.threshr;
 
+import com.graqr.threshr.model.queryparam.TargetStore;
 import com.graqr.threshr.model.queryparam.Tcin;
+import com.graqr.threshr.model.redsky.store.Store;
 import io.micronaut.configuration.picocli.PicocliRunner;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -11,15 +14,18 @@ import picocli.CommandLine.Option;
 @Command(name = "threshr grocery query tool", mixinStandardHelpOptions = true)
 public class ThreshrCli implements Runnable {
 
-    ThreshrController controller;
-    @Option(
-            names = {"--tcin", "-t", "product-id-number"},
+    private final ThreshrController controller;
+    @Option(names = {"--tcin", "-t"},
             required = true,
-            description = "", converter = TcinsConverter.class)
+            description = "",
+            converter = TcinsConverter.class)
     Tcin tcinValues;
 
-    @Option(names = {"--store-id", "-s"}, required = true, description = "store id as given in redsky api")
-    String storeId;
+    @Option(names = {"--store-id", "-s"},
+            required = true,
+            description = "store id as given in redsky api",
+            converter = TargetStoreConverter.class)
+    TargetStore storeId;
 
     public ThreshrCli(ThreshrController threshr) {
         this.controller = threshr;
@@ -32,6 +38,22 @@ public class ThreshrCli implements Runnable {
 
     public void run() {
         //do all the things
+    }
+
+
+    static class TargetStoreConverter implements CommandLine.ITypeConverter<TargetStore> {
+        @Inject
+        ThreshrController threshrController;
+        @Override
+        public TargetStore convert(String s) throws ThreshrException {
+            Store store = threshrController.getStore(s);
+            return new TargetStore(store.storeId(),
+                    store.mailingAddress().state(),
+                    store.mailingAddress().postalCode(),
+                    store.geographicSpecifications().latitude(),
+                    store.geographicSpecifications().longitude());
+
+        }
     }
 
     static class TcinsConverter implements CommandLine.ITypeConverter<Tcin> {

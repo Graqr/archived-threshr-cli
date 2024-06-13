@@ -10,7 +10,6 @@ import org.spockframework.runtime.model.parallel.ExecutionMode
 import spock.lang.AutoCleanup
 import spock.lang.Execution
 import spock.lang.Shared
-import spock.lang.Unroll
 
 @Requires(property = "test.datasources.default.url")
 class ThreshrCliSpec extends ThreshrSpec {
@@ -61,13 +60,12 @@ class ThreshrCliSpec extends ThreshrSpec {
         when:
         execute('--help')
 
-        then:
-        outputStream.toString() ==
-                "Usage: threshr grocery query tool [-hV] [-t=<tcinValues>]...\n" +
-                "  -h, --help      Show this help message and exit.\n" +
-                "  -t, --tcin, product-id-number=<tcinValues>\n" +
-                "\n" +
-                "  -V, --version   Print version information and exit.\n"
+        then: "output is expected help text"
+        outputStream.toString() == "Usage: threshr grocery query tool [-hV] -s=<storeId> -t=<tcinValues>\n" +
+                "  -h, --help                 Show this help message and exit.\n" +
+                "  -s, --store-id=<storeId>   store id as given in redsky api\n" +
+                "  -t, --tcin=<tcinValues>\n" +
+                "  -V, --version              Print version information and exit.\n"
     }
 
     @Execution(ExecutionMode.CONCURRENT)
@@ -76,13 +74,10 @@ class ThreshrCliSpec extends ThreshrSpec {
 
         String[] tcinArg = sql.rows("select tcin FROM target_pdp TABLESAMPLE BERNOULLI (5) limit ${count}")
                 .collect(row -> row.tcin)
-        execute("--tcin", tcinArg.join(","), "--store-id", "1")
+        execute("--tcin", tcinArg.join(","), "--store-id", "830")
 
-        then:
+        then: "no errors found in error stream"
         errStream.toString().isBlank()
-
-        then:
-
 
         where:
         count << (1..20)
@@ -93,7 +88,7 @@ class ThreshrCliSpec extends ThreshrSpec {
 
         String[] tcinArg = sql.rows("select tcin FROM target_pdp TABLESAMPLE BERNOULLI (${percent}) limit ${count}")
                 .collect(row -> row.tcin)
-        execute('--tcin', tcinArg.join(','), "--store-id", "1")
+        execute('--tcin', tcinArg.join(','), "--store-id", "830")
         def matcher = errStream.toString() =~ ".*maximum of 20 tcins allowed.*"
 
         then: "has expected error message"
@@ -103,6 +98,19 @@ class ThreshrCliSpec extends ThreshrSpec {
         where:
         count << (21..25)
         percent = (count/6).intValue() + 1 //db as 6k rows of tcin values
+    }
+
+    def "querying target store #location_id returns info for #location_name"() {
+        when:"using dummy tcin and querying #location_id"
+        execute("--tcin", "123456", "--store-id", location_id as String)
+
+        then:"error stream is empty and output contains data for #location_name"
+        errStream.toString().isBlank()
+        outputStream.toString().contains(location_name as String)
+
+        where:
+        [location_id, location_name] << sql.rows(
+                'select location_id, location_name FROM target_stores TABLESAMPLE BERNOULLI(1)') //table has +2k records
     }
 }
 

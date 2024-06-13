@@ -2,11 +2,13 @@ package com.graqr.threshr;
 
 import com.graqr.threshr.model.queryparam.TargetStore;
 import com.graqr.threshr.model.queryparam.Tcin;
+import com.graqr.threshr.model.redsky.store.Store;
 import io.micronaut.configuration.picocli.PicocliRunner;
 import jakarta.inject.Singleton;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.TypeConversionException;
 
 @Singleton
 @Command(name = "threshr grocery query tool", mixinStandardHelpOptions = true)
@@ -17,7 +19,7 @@ public class ThreshrCli implements Runnable {
             names = {"--tcin", "-t", "product-id-number"},
             required = true,
             description = "", converter = TcinsConverter.class)
-    Tcin[] tcinValues;
+    Tcin tcinValues;
 
     @Option(names = {"--store-id", "-s"}, required = true, description = "store id as given in redsky api")
     String storeId;
@@ -32,13 +34,13 @@ public class ThreshrCli implements Runnable {
     }
 
     public void run() {
-        assert null != tcinValues;
+        //do all the things
     }
 
-    static class TcinsConverter implements CommandLine.ITypeConverter<Tcin[]> {
+    static class TcinsConverter implements CommandLine.ITypeConverter<Tcin> {
         @Override
-        public Tcin[] convert(String s) throws ThreshrException {
-            return new Tcin[]{new Tcin(s.split(","))};
+        public Tcin convert(String s) throws ThreshrException {
+            return new Tcin(s.split(","));
         }
     }
 }

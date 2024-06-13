@@ -6,7 +6,9 @@ import io.micronaut.context.ApplicationContext
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import io.micronaut.context.env.Environment
+import org.spockframework.runtime.model.parallel.ExecutionMode
 import spock.lang.AutoCleanup
+import spock.lang.Execution
 import spock.lang.Shared
 import spock.lang.Unroll
 
@@ -67,18 +69,40 @@ class ThreshrCliSpec extends ThreshrSpec {
                 "\n" +
                 "  -V, --version   Print version information and exit.\n"
     }
-    @Unroll
+
+    @Execution(ExecutionMode.CONCURRENT)
     def "tcin arg can include #count values w/o errors"() {
         when:
 
-        String[] tcinArg = sql.rows("select tcin FROM target_stores TABLESAMPLE BERNOULLI (5) limit ${count}")
-        execute('--tcin', tcinArg.join(','))
+        String[] tcinArg = sql.rows("select tcin FROM target_pdp TABLESAMPLE BERNOULLI (5) limit ${count}")
+                .collect(row -> row.tcin)
+        execute("--tcin", tcinArg.join(","), "--store-id", "1")
 
         then:
-        noExceptionThrown()
+        errStream.toString().isBlank()
+
+        then:
+
 
         where:
-        count << [1..20]
+        count << (1..20)
+    }
+
+    def "tcin arg exceeding 20 count fails"() {
+        when:
+
+        String[] tcinArg = sql.rows("select tcin FROM target_pdp TABLESAMPLE BERNOULLI (${percent}) limit ${count}")
+                .collect(row -> row.tcin)
+        execute('--tcin', tcinArg.join(','), "--store-id", "1")
+        def matcher = errStream.toString() =~ ".*maximum of 20 tcins allowed.*"
+
+        then: "has expected error message"
+        matcher.size() == 1
+
+
+        where:
+        count << (21..25)
+        percent = (count/6).intValue() + 1 //db as 6k rows of tcin values
     }
 }
 

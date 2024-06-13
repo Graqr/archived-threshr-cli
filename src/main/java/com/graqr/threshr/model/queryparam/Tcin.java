@@ -2,7 +2,6 @@ package com.graqr.threshr.model.queryparam;
 
 import com.graqr.threshr.ThreshrException;
 import io.micronaut.core.annotation.Introspected;
-import jakarta.validation.constraints.Size;
 
 import java.util.Arrays;
 import java.util.Objects;

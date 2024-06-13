@@ -1,14 +1,11 @@
 package com.graqr.threshr;
 
-import com.graqr.threshr.model.queryparam.TargetStore;
 import com.graqr.threshr.model.queryparam.Tcin;
-import com.graqr.threshr.model.redsky.store.Store;
 import io.micronaut.configuration.picocli.PicocliRunner;
 import jakarta.inject.Singleton;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.TypeConversionException;
 
 @Singleton
 @Command(name = "threshr grocery query tool", mixinStandardHelpOptions = true)

@@ -56,7 +56,6 @@ class ThreshrCliSpec extends ThreshrSpec {
         System.setErr(originalErr)
     }
 
-    @Execution(ExecutionMode.CONCURRENT)
     def "tcin arg can include #count values w/o errors"() {
         when:
 
@@ -88,7 +87,7 @@ class ThreshrCliSpec extends ThreshrSpec {
         percent = (count/6).intValue() + 1 //db as 6k rows of tcin values
     }
 
-    def "querying target store #location_id returns info for #location_name"() {
+    def "querying tcin with store id returns data for that tcin from a specific store"() {
         when:"using dummy tcin and querying #location_id"
         execute("--tcin", "123456", "--store-id", location_id as String)
 

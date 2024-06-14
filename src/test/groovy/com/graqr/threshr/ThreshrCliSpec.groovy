@@ -70,7 +70,7 @@ class ThreshrCliSpec extends ThreshrSpec {
         count << (1..20)
     }
 
-    def "tcin arg exceeding 20 count fails"() {
+    def "tcin arg exceeding 20 count fails"() { //TODO clarify this is for pdp query, which only takes 1 tcin.
         when:
 
         String[] tcinArg = sql.rows("select tcin FROM target_pdp TABLESAMPLE BERNOULLI (${percent}) limit ${count}")
@@ -87,17 +87,25 @@ class ThreshrCliSpec extends ThreshrSpec {
         percent = (count/6).intValue() + 1 //db as 6k rows of tcin values
     }
 
+    //  ------------ Integration Tests ------------
+
     def "querying tcin with store id returns data for that tcin from a specific store"() {
         when:"using dummy tcin and querying #location_id"
-        execute("--tcin", "123456", "--store-id", location_id as String)
+        String[] tcinArg = sql.rows("select tcin FROM target_pdp TABLESAMPLE limit 1")
+                .collect(row -> row.tcin)
+        execute("--tcin", tcinArg.join(","), "--store-id", location_id as String)
 
         then:"error stream is empty and output contains data for #location_name"
         errStream.toString().isBlank()
-        outputStream.toString().contains(location_name as String)
+        def matcher = outputStream.toString() =~ "{\"__typename\":\"Product\",\"tcin\":\"${tcinArg}.*"
+
+        and: "returned data is product data for #tcinarg"
+        matcher.size() == 1
 
         where:
         [location_id, location_name] << sql.rows(
-                'select location_id, location_name FROM target_stores TABLESAMPLE BERNOULLI(1)') //table has +2k records
+                'select location_id, location_name FROM target_stores TABLESAMPLE BERNOULLI(1) LIMIT 20') //table has +2k records
+        count << (1..20)
     }
 }
 

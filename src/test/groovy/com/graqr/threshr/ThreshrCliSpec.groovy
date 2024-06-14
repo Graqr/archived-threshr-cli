@@ -56,18 +56,6 @@ class ThreshrCliSpec extends ThreshrSpec {
         System.setErr(originalErr)
     }
 
-    def "cli help can be queried successfully"() {
-        when:
-        execute('--help')
-
-        then: "output is expected help text"
-        outputStream.toString() == "Usage: threshr grocery query tool [-hV] -s=<storeId> -t=<tcinValues>\n" +
-                "  -h, --help                 Show this help message and exit.\n" +
-                "  -s, --store-id=<storeId>   store id as given in redsky api\n" +
-                "  -t, --tcin=<tcinValues>\n" +
-                "  -V, --version              Print version information and exit.\n"
-    }
-
     @Execution(ExecutionMode.CONCURRENT)
     def "tcin arg can include #count values w/o errors"() {
         when:

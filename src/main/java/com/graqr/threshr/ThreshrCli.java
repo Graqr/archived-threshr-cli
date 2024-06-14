@@ -4,7 +4,6 @@ import com.graqr.threshr.model.queryparam.TargetStore;
 import com.graqr.threshr.model.queryparam.Tcin;
 import com.graqr.threshr.model.redsky.store.Store;
 import io.micronaut.configuration.picocli.PicocliRunner;
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -42,8 +41,12 @@ public class ThreshrCli implements Runnable {
 
 
     static class TargetStoreConverter implements CommandLine.ITypeConverter<TargetStore> {
-        @Inject
         ThreshrController threshrController;
+
+        public TargetStoreConverter(ThreshrController threshrController) {
+            this.threshrController = threshrController;
+        }
+
         @Override
         public TargetStore convert(String s) throws ThreshrException {
             Store store = threshrController.getStore(s);
